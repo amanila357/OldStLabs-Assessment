@@ -1,0 +1,14 @@
+package com.example.bookingsystem;
+
+import java.util.Date;
+import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+
+public interface BookingRepository extends JpaRepository<Booking, Long> {
+	
+	@Query("from Booking where date=?1")
+	List<Booking> findByDate(Date date);
+
+}

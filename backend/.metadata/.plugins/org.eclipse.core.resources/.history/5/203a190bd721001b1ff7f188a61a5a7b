@@ -1,0 +1,80 @@
+package com.example.bookingsystem;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+class BookingController {
+	private final BookingRepository repo;
+
+	BookingController(BookingRepository repo) {
+		this.repo = repo;
+	}
+
+	@GetMapping("/bookings")
+	List<Booking> getAllBookings() {
+//		return repo.findAll();
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		Date d1 = null;
+		Date d2 = null;
+		try {
+			d1 = sdf.parse("2020-11-02");
+			d2 = sdf.parse("2020-11-03");
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+//		return repo.findByDate(date);
+		return repo.findBetweenDates(d1, d2);
+	}
+
+	@GetMapping("/booking")
+	Booking getBooking(@RequestParam Long id) {
+		return repo.findById(id).orElseGet(() -> {
+			return null;
+		});
+	}
+
+	@PostMapping("/booking")
+	Booking addBooking(@RequestParam String name, @RequestParam String comments, @RequestParam String date) {
+		System.err.println("date: " + date);
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		Date tempDate = null;
+		try {
+			tempDate = sdf.parse(date);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		System.err.println("tempD: "+tempDate);
+		
+		return repo.save(new Booking(name, comments, tempDate));
+	}
+
+	@PutMapping("/booking")
+	Booking editBooking(@RequestParam Long id, @RequestParam String name, @RequestParam String comments) {
+		return repo.findById(id).map(booking -> {
+			booking.setName(name);
+			booking.setComments(comments);
+			return repo.save(booking);
+		}).orElseGet(() -> {
+			return null;
+		});
+	}
+	
+	@DeleteMapping("/booking")
+	void deleteBooking(@RequestParam Long id) {
+		repo.deleteById(id);
+	}
+
+}
